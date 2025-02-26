@@ -1,0 +1,28 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: gcelente
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: case-tecnico-arrca
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+
+functions:
+  hello:
+    handler: handler.hello
+  fetchStores:
+    handler: handler/fetchStores.fetchStoresHandler
+    events:
+      - http:
+          path: fetch-stores
+          method: post
+          
+  processStores:
+    handler: handler/processStores.processStoresHandler
+    events:
+      - http:
+          path: process-stores
+          method: post
+  
+plugins: 
+  - serverless-offline
