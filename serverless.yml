@@ -26,3 +26,8 @@ functions:
   
 plugins: 
   - serverless-offline
+
+custom:
+  serverless-offline:
+    port: 3056
+    lambdaPort: 4000
