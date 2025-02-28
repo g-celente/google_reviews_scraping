@@ -5,7 +5,10 @@ require('dotenv').config();
 const api_key = process.env.API_KEY
 
 exports.processStoresHandler = async (event) => {
-    for (const record of event.Records) {
+
+    const parsedBody = JSON.parse(event.body)
+
+    for (const record of parsedBody.Records) {
         const { place_id: placeId, name } = JSON.parse(record.body);
 
         let allReviews = [];
