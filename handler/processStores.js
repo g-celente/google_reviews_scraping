@@ -1,5 +1,6 @@
 const axios = require("axios");
 const handlerError = require('../helpers/functions.js')
+const Review = require('../models/Review');
 require('dotenv').config();
 
 const api_key = process.env.API_KEY
@@ -30,12 +31,16 @@ exports.processStoresHandler = async (event) => {
                 if (data.reviews) {
                     allReviews.push(
                         ...data.reviews.map((review) => ({
+                            placeId: placeId, 
                             user: review.user.name,
                             rating: review.rating,
                             date: review.iso_date,
                             snippet: review.snippet,
                         }))
                     );
+
+                    await Review.bulkCreate(allReviews);     
+
                 }
 
                 nextPageToken = data.serpapi_pagination?.next_page_token || null;
@@ -46,9 +51,11 @@ exports.processStoresHandler = async (event) => {
             }
         } while (pageCount < 1); 
 
-        console.log({
-            totalReviews: allReviews.length,
-            reviews: allReviews,
-        });
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                message: "Scraping realizado com sucesso"
+            })
+        }
     }
 };
