@@ -6,23 +6,34 @@ service: case-tecnico-arrca
 provider:
   name: aws
   runtime: nodejs20.x
+  timeout: 300
+  memorySize: 1024
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource: "*"
 
 functions:
-  hello:
-    handler: handler.hello
   fetchStores:
     handler: handler/fetchStores.fetchStoresHandler
     events:
       - http:
           path: fetch-stores
           method: post
-          
+
   processStores:
     handler: handler/processStores.processStoresHandler
     events:
-      - http:
-          path: process-stores
+      - http: 
+          path: process-store
           method: post
+#      - sqs:
+#          arn: arn:aws:sqs:us-east-2:557690625247:mysqs-test
+#          batchSize: 1
   
 plugins: 
   - serverless-offline

@@ -1,61 +1,51 @@
-const { getJson } = require("serpapi");
+const axios = require("axios");
+const handlerError = require('../helpers/functions.js')
+require('dotenv').config();
 
-const api_key = process.env.API_KEY;
-
-async function fetchReviews(pageToken = null) {
-    const params = {
-        engine: "google_maps_reviews",
-        data_id: "ChIJhxTcDIrVmwARm0brYm21Hkw",
-        hl: "fr",  
-        api_key: api_key, 
-    };
-
-    if (pageToken) {
-        params.next_page_token = pageToken;
-        params.num = 20;  
-    }
-
-    return new Promise((resolve, reject) => {
-        getJson(params, (json) => {
-            if (json['reviews']) {
-                // Extrair dados das avaliações
-                const reviews = json['reviews'].map(review => ({
-                    author_name: review.user.name,
-                    author_id: review.user.contributor_id,
-                    rating: review.rating,
-                    comment: review.snippet
-                }));
-
-                const nextPageToken = json['next_page_token'];
-
-                resolve({ reviews, nextPageToken });
-            } else {
-                reject('Não foi possível obter as avaliações.');
-            }
-        });
-    });
-}
+const api_key = process.env.API_KEY
 
 exports.processStoresHandler = async (event) => {
-    try {
-        let pageToken = null;
-        let allReviews = [];
-        
-        do {
-            const { reviews, nextPageToken } = await fetchReviews(pageToken);
-            allReviews = [...allReviews, ...reviews];
-            pageToken = nextPageToken;
-        } while (pageToken);
+    for (const record of event.Records) {
+        const { place_id: placeId, name } = JSON.parse(record.body);
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ reviews: allReviews }),
-        };
-    } catch (error) {
-        console.error(error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Erro ao processar avaliações.' }),
-        };
+        let allReviews = [];
+        let nextPageToken = null;
+        let pageCount = 0; 
+
+        do {
+            const params = {
+                engine: "google_maps_reviews",
+                place_id: placeId,
+                api_key: api_key,
+                next_page_token: nextPageToken, 
+            };
+
+            try {
+                let response = await axios.get("https://serpapi.com/search", { params });
+                const data = response.data;
+
+                if (data.reviews) {
+                    allReviews.push(
+                        ...data.reviews.map((review) => ({
+                            user: review.user.name,
+                            rating: review.rating,
+                            date: review.iso_date,
+                            snippet: review.snippet,
+                        }))
+                    );
+                }
+
+                nextPageToken = data.serpapi_pagination?.next_page_token || null;
+                pageCount++; 
+
+            } catch (error) {
+                return handlerError(error, "Erro ao processar a requisição", 500)
+            }
+        } while (pageCount < 1); 
+
+        console.log({
+            totalReviews: allReviews.length,
+            reviews: allReviews,
+        });
     }
 };
