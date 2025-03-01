@@ -3,10 +3,12 @@ org: gcelente
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: case-tecnico-arrca
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: nodejs20.x
-  timeout: 300
+  region: us-east-2
   memorySize: 1024
   iamRoleStatements:
     - Effect: Allow
@@ -16,6 +18,16 @@ provider:
         - sqs:DeleteMessage
         - sqs:GetQueueAttributes
       Resource: "*"
+  environment: 
+    API_KEY: ${env:API_KEY}
+    SQS_QUEUE_URL: ${env:SQS_QUEUE_URL}
+    DATABASE: ${env:DATABASE}
+    DATABASE_USER: ${env:DATABASE_USER}
+    DATABASE_PASSWORD: ${env:DATABASE_PASSWORD}
+    DATABASE_HOST: ${env:DATABASE_HOST}
+    REGION: ${env:REGION}
+
+
 
 functions:
   fetchStores:
@@ -28,12 +40,9 @@ functions:
   processStores:
     handler: handler/processStores.processStoresHandler
     events:
-      - http: 
-          path: process-store
-          method: post
-#      - sqs:
-#          arn: arn:aws:sqs:us-east-2:557690625247:mysqs-test
-#          batchSize: 1
+      - sqs:
+          arn: arn:aws:sqs:us-east-2:557690625247:mysqs-test
+          batchSize: 1
   
 plugins: 
   - serverless-offline

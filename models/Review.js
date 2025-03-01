@@ -9,7 +9,7 @@ const Review = sequelize.define('Review', {
   },
   placeId: {
     type: DataTypes.STRING,
-    allowNull: false, // Indica de onde veio o dado
+    allowNull: false,
   },
   user: {
     type: DataTypes.STRING,
@@ -29,7 +29,7 @@ const Review = sequelize.define('Review', {
   }
 }, {
   tableName: 'reviews',
-  timestamps: true, // Adiciona createdAt e updatedAt
+  timestamps: true, 
 });
 
 module.exports = Review;

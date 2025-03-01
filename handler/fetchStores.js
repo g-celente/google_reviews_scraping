@@ -45,9 +45,9 @@ async function processStores(stores) {
 
     try {
       await sqsClient.sendMessage(SQS_QUEUE_URL, { place_id: placeId, name });
-      console.log(`✅ Loja enviada para a fila SQS da AWS: ${name}`);
+      console.log(`Loja enviada para a fila SQS da AWS: ${name}`);
     } catch (error) {
-      console.error("❌ Erro ao enviar para a fila SQS:", error);
+      console.error("Erro ao enviar para a fila SQS:", error);
     }
   }
 }
