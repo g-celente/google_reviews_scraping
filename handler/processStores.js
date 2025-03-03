@@ -19,6 +19,7 @@ exports.processStoresHandler = async (event) => {
             const params = {
                 engine: "google_maps_reviews",
                 place_id: placeId,
+                hl: "pt-br",
                 api_key: api_key,
                 next_page_token: nextPageToken, 
             };
